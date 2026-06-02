@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/riekelt/multi-agent-review/compare/v1.1.0...v1.2.0) (2026-06-02)
+
+
+### Features
+
+* scope gates on reviewers + 3-iteration cap on decision loop ([370054f](https://github.com/riekelt/multi-agent-review/commit/370054fad8644f880cc0f665db45403e25e4d56c))
+
 # [1.1.0](https://github.com/riekelt/multi-agent-review/compare/v1.0.0...v1.1.0) (2026-05-25)
 
 
