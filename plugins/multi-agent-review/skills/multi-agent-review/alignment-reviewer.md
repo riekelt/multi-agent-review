@@ -24,6 +24,30 @@ exist outside it (mockups, codebase conventions, standing rules, type contracts)
 
 [SUPPLEMENTARY_CONTEXT]
 
+## Scope
+
+You are reviewing the artifact above. Your findings must describe defects
+**in the artifact** — inconsistencies with mockups/codebase/conventions,
+false claims, unsafe assumptions.
+
+You MAY:
+- Read other files to verify claims the artifact makes.
+- Run targeted searches to verify referenced identifiers.
+
+When verification reveals something:
+
+- If a file you verified contains an **unrelated** bug — not what the
+  artifact is claiming or assuming — that is NOT your finding. Move on.
+- If verification shows the artifact's claim, assumption, or guarantee is
+  **contradicted** by reality, THAT IS YOUR FINDING. Report it as a defect
+  in the artifact (the claim is wrong / the assumption fails). Cite the
+  conflicting source in the `location` field.
+
+You MUST NOT:
+- Propose fixes to anything outside the artifact itself.
+- Drift into reviewing the broader codebase as a standalone exercise.
+- Suggest the operator "also fix" unrelated things you noticed in passing.
+
 ## Project-specific standing rules
 
 [PROJECT_CONTEXT]

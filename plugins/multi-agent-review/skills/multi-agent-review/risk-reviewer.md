@@ -25,6 +25,31 @@ fail-closed, or where an error could silently propagate.
 
 Apply any project-specific risk rules listed above in addition to the generic checks below.
 
+## Scope
+
+You are reviewing the artifact above. Your findings must describe production-
+safety defects **in the artifact** — silent fallbacks, missing fail-closed
+paths, unsafe assumptions, false safety claims.
+
+You MAY:
+- Read other files to verify claims the artifact makes.
+- Run targeted searches to verify referenced identifiers and behaviours.
+
+When verification reveals something:
+
+- If a file you verified contains an **unrelated** bug — not what the
+  artifact is claiming or assuming — that is NOT your finding. Move on.
+- If verification shows the artifact's safety claim, assumption, or
+  guarantee is **contradicted** by reality (e.g. spec asserts fail-closed
+  but the referenced handler silently falls back), THAT IS YOUR FINDING.
+  Report it as a BLOCKER defect in the artifact and cite the conflicting
+  source in the `location` field.
+
+You MUST NOT:
+- Propose fixes to anything outside the artifact itself.
+- Drift into reviewing the broader codebase for unrelated risks.
+- Suggest the operator "also fix" unrelated things you noticed in passing.
+
 ## Generic checks (apply to all projects)
 
 1. **Silent fallbacks** — any handler, service, or algorithm that catches an exception

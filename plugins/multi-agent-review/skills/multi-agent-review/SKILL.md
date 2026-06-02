@@ -196,6 +196,23 @@ OBS       = findings with severity OBS
 
 ### Step 9 — Decision gate
 
+**Iteration cap.** Track the iteration count — first invocation = 1, each
+operator-requested re-run increments it. The cap is **3 iterations**.
+
+When `iteration_count >= 3`:
+- Do NOT offer "fix + re-run" again.
+- Present the current verdict with header:
+  > "⛔ REVIEW EXHAUSTED — 3 iterations reached. Showing final findings."
+- The operator's only choices are:
+  - **(a) Override and proceed** — invoke next skill despite remaining
+    blockers (log the override per the override-log rule below).
+  - **(b) Abort** — do not invoke the next skill; the artifact is not ready.
+
+Do not loop indefinitely. After 3 rounds we have enough signal — keep
+chasing blockers only burns cycles and surfaces stylistic noise.
+
+---
+
 **If BLOCKERS exist:**
 
 Present blockers clearly:
