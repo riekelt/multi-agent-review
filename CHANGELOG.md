@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/riekelt/multi-agent-review/compare/v1.2.1...v1.3.0) (2026-08-19)
+
+
+### Features
+
+* field-research imports for the review gate ([3a8a470](https://github.com/riekelt/multi-agent-review/commit/3a8a4705d4820a47745b3b82ee3924926b057276))
+
 ## [1.2.1](https://github.com/riekelt/multi-agent-review/compare/v1.2.0...v1.2.1) (2026-08-19)
 
 
