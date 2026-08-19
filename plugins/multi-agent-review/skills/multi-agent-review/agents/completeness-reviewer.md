@@ -40,6 +40,8 @@ You MUST NOT:
 - Drift into reviewing the broader codebase as a standalone exercise.
 - Suggest the operator "also fix" unrelated things you noticed in passing.
 
+Why this boundary exists: out-of-scope findings dilute the verdict, burn operator attention on work the gate does not govern, and make the pair-comparison step misfire on findings the other model was never asked to look for.
+
 ## What to check
 
 1. **Unresolved placeholders** — any literal TBD, TODO, "fill in later", "see below",

@@ -1,0 +1,21 @@
+{
+  "skill_name": "multi-agent-review",
+  "evals": [
+    {
+      "id": 1,
+      "name": "planted-defects-spec-full-panel",
+      "prompt": "/multi-agent-review spec plugins/multi-agent-review/evals/fixtures/notification-batching-design.md",
+      "expected_output": "Verdict is BLOCKED, not clean. The completeness reviewers surface at least: the literal TBD flush interval (unresolved placeholder), 'handled appropriately' (what without how), DigestTemplateVNext (undefined reference), and the absence of any acceptance criteria. The risk reviewer flags the all-users-at-once rollout. The coordinator runs the pair comparison, invokes the juror only on genuinely contested findings, and presents blockers to the operator instead of auto-proceeding.",
+      "files": ["plugins/multi-agent-review/evals/fixtures/notification-batching-design.md"],
+      "assertions": []
+    },
+    {
+      "id": 2,
+      "name": "planted-defects-spec-fast-mode",
+      "prompt": "/multi-agent-review spec plugins/multi-agent-review/evals/fixtures/notification-batching-design.md --fast",
+      "expected_output": "Fast mode dispatches exactly three fast-tier reviewers, skips the pair comparison and the juror, and accepts every finding from each valid report at its emitted severity. The verdict is BLOCKED with the planted defects listed and carries a note that no cross-model adjudication ran. An empty accepted-findings list on this fixture is a failure: the fixture contains defects a single fast-tier pass must catch.",
+      "files": ["plugins/multi-agent-review/evals/fixtures/notification-batching-design.md"],
+      "assertions": []
+    }
+  ]
+}

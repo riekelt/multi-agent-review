@@ -19,5 +19,10 @@
     "quality-gate",
     "pre-execution"
   ],
-  "skills": "./skills/"
+  "skills": "./skills/",
+  "models": {
+    "fast": "haiku",
+    "standard": "sonnet",
+    "reasoning": "opus"
+  }
 }

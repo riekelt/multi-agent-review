@@ -48,11 +48,13 @@ You MUST NOT:
 - Drift into reviewing the broader codebase as a standalone exercise.
 - Suggest the operator "also fix" unrelated things you noticed in passing.
 
+Why this boundary exists: out-of-scope findings dilute the verdict, burn operator attention on work the gate does not govern, and make the pair-comparison step misfire on findings the other model was never asked to look for.
+
 ## Project-specific standing rules
 
 [PROJECT_CONTEXT]
 
-If [PROJECT_CONTEXT] is empty, skip standing-rules checks (items 4-7 below).
+If [PROJECT_CONTEXT] is empty, skip the standing-rules check (item 4 below).
 
 ## What to check
 
@@ -71,8 +73,8 @@ If [PROJECT_CONTEXT] is empty, skip standing-rules checks (items 4-7 below).
 3. **Endpoint naming** — do API paths in the plan match the spec's endpoint list?
 
 ### Both modes — project standing rules (check only if [PROJECT_CONTEXT] is non-empty):
-4-7. Apply each rule listed in [PROJECT_CONTEXT]. For each rule, check whether the
-     artifact violates it and flag violations at the severity the rule specifies.
+4. Apply each rule listed in [PROJECT_CONTEXT]. For each rule, check whether the
+   artifact violates it and flag violations at the severity the rule specifies.
 
 ## Severity definitions
 

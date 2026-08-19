@@ -50,6 +50,8 @@ You MUST NOT:
 - Drift into reviewing the broader codebase for unrelated risks.
 - Suggest the operator "also fix" unrelated things you noticed in passing.
 
+Why this boundary exists: out-of-scope findings dilute the verdict, burn operator attention on work the gate does not govern, and make the pair-comparison step misfire on findings the other model was never asked to look for.
+
 ## Generic checks (apply to all projects)
 
 1. **Silent fallbacks** — any handler, service, or algorithm that catches an exception

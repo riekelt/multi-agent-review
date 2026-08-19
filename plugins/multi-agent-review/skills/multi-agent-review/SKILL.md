@@ -1,14 +1,15 @@
 ---
 name: multi-agent-review
-description: Use before writing-plans (spec mode) or before subagent-driven-development (plan mode). Panels six independent reviewers across three topics, then invokes an opus juror only when models disagree. Produces a Blockers / Warnings / Observations verdict that gates the next workflow step.
+description: Use when a spec or plan needs review before execution begins - "review my spec", "is this plan ready to execute", "check this before I build it", "second opinion on this plan" - and specifically before writing-plans (spec mode) or before subagent-driven-development (plan mode). Panels six independent reviewers across three topics, then invokes a reasoning-tier juror only when models disagree. Produces a Blockers / Warnings / Observations verdict that gates the next workflow step.
 ---
 
 # Multi-Agent Review
 
 Run a panel of independent reviewers on a spec or plan before execution starts.
-Two model tiers (haiku + sonnet) review each of three topics in parallel.
-When the tiers disagree, a single opus juror adjudicates.
+Two model tiers (fast + standard) review each of three topics in parallel.
+When the tiers disagree, a single reasoning-tier juror adjudicates.
 The verdict gates whether the next workflow step proceeds.
+Concrete model IDs come from the plugin manifest (Step 3); the tier names below are variables, not model names.
 
 ## When to invoke
 
@@ -24,8 +25,10 @@ The verdict gates whether the next workflow step proceeds.
 
 mode:    spec | plan          (required)
 path:    explicit file path   (optional — omit to use most-recent artifact)
---fast:  haiku-only, skip sonnet tier, skip juror (cost-saving for fast iteration)
+--fast:  fast tier only, skip standard tier and juror (cost-saving for fast iteration)
 ```
+
+If the operator omits the mode, infer it from the artifact's path (`docs/superpowers/specs/` vs `docs/superpowers/plans/`) and confirm the inference before dispatching.
 
 ---
 
@@ -61,27 +64,32 @@ Read the **full** artifact content verbatim. **Never truncate or summarise any p
 
 Locate the plugin manifest (do NOT use a bare `.claude-plugin/plugin.json` relative path — that resolves against the user's project, not the plugin install). Try in order until one succeeds:
 
-1. `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` — Claude Code / Cursor
-2. `${CLAUDE_PLUGIN_ROOT}/.codex-plugin/plugin.json` — Codex if it sets this var
-3. `<dir of this SKILL.md>/../../.claude-plugin/plugin.json` — walk up two levels
-4. `<dir of this SKILL.md>/../../.codex-plugin/plugin.json` — same fallback for Codex
-5. Hardcoded fallback: `{ "fast": "haiku", "standard": "sonnet", "reasoning": "opus" }`
+1. `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` - Claude Code
+2. `${CLAUDE_PLUGIN_ROOT}/.codex-plugin/plugin.json` - Codex if it sets this var
+3. `${CLAUDE_PLUGIN_ROOT}/.cursor-plugin/plugin.json` - Cursor
+4. `<dir of this SKILL.md>/../../.claude-plugin/plugin.json` - walk up two levels
+5. `<dir of this SKILL.md>/../../.codex-plugin/plugin.json` - same fallback for Codex
+6. `<dir of this SKILL.md>/../../.cursor-plugin/plugin.json` - same fallback for Cursor
+7. Hardcoded fallback: `{ "fast": "haiku", "standard": "sonnet", "reasoning": "opus" }`
 
-Quick bash to try options 1-2:
+Read the `"models"` object from the first manifest that loads **and contains a `models` key**. A manifest that loads but has no `models` key does not stop the search - keep trying the next candidate, and use the hardcoded fallback only when the list is exhausted. (Without this rule, a manifest that merely exists resolves the tiers to nothing and Step 5 dispatches with undefined model IDs.)
+
+Quick bash to try options 1-3:
 ```bash
-[ -n "$CLAUDE_PLUGIN_ROOT" ] && cat "$CLAUDE_PLUGIN_ROOT/.claude-plugin/plugin.json" 2>/dev/null \
-  || cat "$CLAUDE_PLUGIN_ROOT/.codex-plugin/plugin.json" 2>/dev/null
+for m in .claude-plugin .codex-plugin .cursor-plugin; do
+  jq -e '.models' "$CLAUDE_PLUGIN_ROOT/$m/plugin.json" 2>/dev/null && break
+done
 ```
 
-Read the `"models"` object from the first manifest that loads. Store `FAST_TIER`, `STANDARD_TIER`, `REASONING_TIER` from `models.fast`, `models.standard`, `models.reasoning`. Use these in Step 5 and Step 7 — never hardcode model names.
+Store `FAST_TIER`, `STANDARD_TIER`, `REASONING_TIER` from `models.fast`, `models.standard`, `models.reasoning`. Use these in Step 5 and Step 7 - never hardcode model names.
 
 **Read companion prompt files:**
 
-Read these four files from the same directory as this SKILL.md:
-- `completeness-reviewer.md`
-- `alignment-reviewer.md`
-- `risk-reviewer.md`
-- `synthesis-agent.md`
+Read these four files from the `agents/` directory beside this SKILL.md:
+- `agents/completeness-reviewer.md`
+- `agents/alignment-reviewer.md`
+- `agents/risk-reviewer.md`
+- `agents/synthesis-agent.md`
 
 Each contains a fenced prompt template. Extract the content inside the outermost ``` fence.
 
@@ -116,9 +124,9 @@ Agent(risk-standard):         model=STANDARD_TIER, prompt=risk_prompt
 
 (Substitute `FAST_TIER` / `STANDARD_TIER` with the actual model IDs resolved in Step 3.)
 
-If `--fast` was passed: dispatch only the three `FAST_TIER` agents and skip to Step 7.
+If `--fast` was passed: dispatch only the three `FAST_TIER` agents, then skip Steps 6 and 7 entirely and go to Step 8. With one model per topic there is no pair to compare and nothing to adjudicate, so `CONTESTED_LIST` does not exist in this mode.
 
-⚠ **--fast safety note:** In `--fast` mode, contested findings between haiku reviewers are NEVER adjudicated by the juror. Do NOT use `--fast` on a plan that touches trading paths or production-safety-critical features. Reserve `--fast` for lightweight non-safety specs (tooling, docs, UI copy).
+⚠ **--fast safety note:** `--fast` is a single-tier review: no cross-model check and no juror. Do NOT use `--fast` on anything touching production-safety-critical or irreversible paths. Reserve it for lightweight non-safety artifacts (tooling, docs, UI copy).
 
 **After dispatching, track which agents returned valid reports.** A valid report contains at least one line starting with `FINDINGS:`. Record which agents errored or timed out — this is used in Step 8's quorum check.
 
@@ -159,6 +167,10 @@ If `CONTESTED_LIST` has entries:
 
 Count valid reports (those that returned a `FINDINGS:` line, including `FINDINGS: none`).
 
+`--fast` mode quorum: the panel is 3, not 6. Fewer than 2 valid reports = HALT (same message, with N/3); exactly 2 = add the panel-health WARNING; 3 = proceed normally.
+
+Full-panel quorum:
+
 ```
 if valid_reports < 3:
     HALT — present to operator:
@@ -175,6 +187,10 @@ if valid_reports < 6:
 ```
 
 **Then compile accepted findings:**
+
+`--fast` mode compile rule: there are no pairs and no juror, so accept EVERY finding from every valid report, at the severity the emitting model assigned. This rule exists because the pair-agreement logic below would otherwise accept nothing in `--fast` mode, and an always-empty accepted_findings list silently produces a clean verdict on every run - the exact failure the panel-failure table forbids.
+
+Full-panel compile:
 
 ```
 accepted_findings = []
@@ -286,7 +302,7 @@ These rules govern what happens when the panel does not complete cleanly:
 | 6 valid reports | Proceed normally |
 | Juror error/timeout | **Conservative fallback** — promote all contested findings to BLOCKER, present as "JUROR FAILED" |
 | All agents error | **HALT** — empty accepted_findings must never silently trigger clean verdict |
-| `--fast` + contested findings | No juror adjudication — contested findings stay at haiku's severity; operator is warned that adjudication was skipped |
+| `--fast` mode | Single tier, nothing is contested: every finding from a valid report is accepted at its emitted severity; quorum is 2 of 3; the verdict carries a note that no cross-model adjudication ran |
 
 **Never allow an incomplete panel to produce a clean verdict.** If any doubt, halt and present to operator.
 
@@ -297,24 +313,22 @@ These rules govern what happens when the panel does not complete cleanly:
 Model IDs are resolved at runtime from the active plugin manifest's `"models"` field.
 Default Claude Code values shown; Codex and other platforms override via their own plugin.json.
 
-| Tier variable | CC default | Codex default | Role |
-|---|---|---|---|
-| `FAST_TIER` | `haiku` | `gpt-5.4-mini` | Fast reviewer (always used) |
-| `STANDARD_TIER` | `sonnet` | `gpt-5.4` | Standard reviewer (skipped with `--fast`) |
-| `REASONING_TIER` | `opus` | `gpt-5.5` | Juror (not overridable — defeats purpose) |
+| Tier variable | CC default | Codex default | Cursor default | Role |
+|---|---|---|---|---|
+| `FAST_TIER` | `haiku` | `gpt-5.6-luna` | `claude-haiku` | Fast reviewer (always used) |
+| `STANDARD_TIER` | `sonnet` | `gpt-5.6-terra` | `claude-sonnet` | Standard reviewer (skipped with `--fast`) |
+| `REASONING_TIER` | `opus` | `gpt-5.6-sol` | `claude-opus` | Juror (not overridable: adjudication on a weak model defeats its purpose) |
 
 ## What this skill does NOT do
 
 - Does not repair artifacts — surfaces findings only; the operator makes changes
 - Does not review code — that is `subagent-driven-development`'s job
-- Does not run on arbitrary files — only specs and plans in `docs/superpowers/`
+- Defaults to the most recent spec or plan under `docs/superpowers/`; an explicit path argument overrides this
 
-## Companion files in this directory
+## Companion files
 
-- `completeness-reviewer.md` — placeholders, missing criteria, undefined refs
-- `alignment-reviewer.md` — mockup/codebase consistency, standing rules
-- `risk-reviewer.md` — production safety, fail-closed paths
-- `synthesis-agent.md` — juror prompt, only dispatched on contested findings
-- `project-rules.example.md` — template to copy into your project as `project-rules.md`
-- `design.md` — original design spec for this skill
-- `implementation-plan.md` — original implementation plan for this skill
+- `agents/completeness-reviewer.md` - placeholders, missing criteria, undefined refs
+- `agents/alignment-reviewer.md` - mockup/codebase consistency, standing rules
+- `agents/risk-reviewer.md` - production safety, fail-closed paths
+- `agents/synthesis-agent.md` - juror prompt, only dispatched on contested findings
+- `assets/project-rules.example.md` - template to copy into your project as `project-rules.md`
