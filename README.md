@@ -1,5 +1,7 @@
 # multi-agent-review
 
+[![skills.sh](https://skills.sh/b/riekelt/multi-agent-review)](https://skills.sh/riekelt/multi-agent-review)
+
 A Claude Code + Codex skill that panels six independent review agents across three topics before you execute a plan or finish a spec. When model tiers disagree, an opus juror adjudicates. The result is a gated **Blockers / Warnings / Observations** verdict.
 
 Designed to work with the [Superpowers](https://github.com/obra/superpowers) workflow:
