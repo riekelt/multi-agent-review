@@ -1,6 +1,6 @@
 ---
 name: multi-agent-review
-description: Use when a spec or plan needs review before execution begins - "review my spec", "is this plan ready to execute", "check this before I build it", "second opinion on this plan" - and specifically before writing-plans (spec mode) or before subagent-driven-development (plan mode). Panels six independent reviewers across three topics, then invokes a reasoning-tier juror only when models disagree. Produces a Blockers / Warnings / Observations verdict that gates the next workflow step.
+description: Use when a spec or plan needs review before execution begins - "review my spec", "is this plan ready to execute", "check this before I build it", "second opinion on this plan" - and specifically before writing-plans (spec mode) or before subagent-driven-development (plan mode). Reviews specs and plans, not code. Panels six reviewers across two model tiers (cross-vendor configurable) and three topics, invokes a reasoning-tier juror only when the tiers disagree, and gates the next workflow step with a fail-closed Blockers / Warnings / Observations verdict.
 ---
 
 # Multi-Agent Review
@@ -54,7 +54,11 @@ ls -t docs/superpowers/plans/*.md | grep -v tasks.json | head -1
 ```
 Also find the linked spec: read the plan file, look for a `Spec:` header line or `planPath`, and load that spec as supplementary context for the alignment reviewer.
 
-### Step 2 — Read the artifact
+### Step 2 - Validate, then read the artifact
+
+**Pre-dispatch validation.** Before spawning anything: the artifact file exists and is non-empty, and every spec, mockup, or companion path it references resolves on disk. A missing or empty artifact burns a six-agent panel on false positives; report it to the operator instead of dispatching.
+
+**Oversized artifacts.** Above roughly 2,000 lines, stop and ask the operator: proceed with the full artifact, or narrow to a named section. Six reviews of a document too large to hold degrade silently; the question costs one turn.
 
 Read the **full** artifact content verbatim. **Never truncate or summarise any part of the artifact before passing it to agents** — an agent that receives an abbreviated spec will flag missing sections as BLOCKERs, producing false positives that poison the verdict. If the file is large, read it in chunks but assemble the full text before building prompts.
 
@@ -97,7 +101,9 @@ Also check for a `project-rules.md` file in the **project root** (same directory
 ```bash
 cat project-rules.md 2>/dev/null || echo ""
 ```
-If found, read it into `PROJECT_CONTEXT`. If absent, `PROJECT_CONTEXT` is empty string. This file is where projects configure their standing rules, safety constraints, and codebase-specific conventions.
+If found, read it into `PROJECT_CONTEXT`. This file is where projects configure their standing rules, safety constraints, and codebase-specific conventions.
+
+If absent, fall back to the project's `CLAUDE.md` (or `AGENTS.md`) rather than reviewing rules-blind, prefixed with this framing so reviewers do not treat working instructions as review criteria: "The following are the project's general working instructions, not purpose-built review rules. Apply only the ones that read as standing constraints on specs and plans; ignore instructions about tooling, workflow, or agent behavior." If neither file exists, `PROJECT_CONTEXT` is the empty string.
 
 ### Step 4 — Build the six agent prompts
 
@@ -124,7 +130,11 @@ Agent(risk-standard):         model=STANDARD_TIER, prompt=risk_prompt
 
 (Substitute `FAST_TIER` / `STANDARD_TIER` with the actual model IDs resolved in Step 3.)
 
-If `--fast` was passed: dispatch only the three `FAST_TIER` agents, then skip Steps 6 and 7 entirely and go to Step 8. With one model per topic there is no pair to compare and nothing to adjudicate, so `CONTESTED_LIST` does not exist in this mode.
+**Cross-vendor dispatch.** A tier value prefixed `cli:` (for example `"standard": "cli:codex"`) means: dispatch that tier's three reviewers by running the named CLI with the built prompt, instead of the Agent tool. Same prompts, same output contract. This makes cross-model disagreement an independent second opinion rather than a same-vendor capability gap; a fast/standard pair from one vendor still catches real defects, but its disagreements partly measure model size, and the juror inherits that bias. Prefer a cross-vendor standard tier where a second vendor's CLI is available.
+
+**--fast escalation guard.** Before honoring `--fast`, scan the artifact for high-risk markers: authentication, authorization, security, secrets, payment, billing, migration, data deletion, production infrastructure, or anything the project rules mark safety-critical. On a hit, refuse `--fast`, tell the operator which marker triggered the refusal, and run the full panel. The single-tier discount is never available for the work that needs the panel most.
+
+If `--fast` was passed (and not refused): dispatch only the three `FAST_TIER` agents, then skip Steps 6 and 7 entirely and go to Step 8. With one model per topic there is no pair to compare and nothing to adjudicate, so `CONTESTED_LIST` does not exist in this mode.
 
 ⚠ **--fast safety note:** `--fast` is a single-tier review: no cross-model check and no juror. Do NOT use `--fast` on anything touching production-safety-critical or irreversible paths. Reserve it for lightweight non-safety artifacts (tooling, docs, UI copy).
 
@@ -210,7 +220,17 @@ WARNINGS  = findings with severity WARNING
 OBS       = findings with severity OBS
 ```
 
+**Cross-topic deduplication (before bucketing):** the same defect flagged by two topics (matching location and overlapping description) is one finding, kept at the highest severity assigned, annotated with both topics. Without this, one gap double-counts in the verdict and reads as two problems to fix.
+
 ### Step 9 — Decision gate
+
+**Alongside every human verdict**, emit a fenced JSON block so downstream automation and the next skill can consume the gate result without parsing prose:
+
+```json
+{"verdict": "BLOCKED | WARNINGS | CLEAN | HALTED",
+ "blockers": [], "warnings": [], "obs": [],
+ "panel_health": [], "iteration": 1}
+```
 
 **Iteration cap.** Track the iteration count — first invocation = 1, each
 operator-requested re-run increments it. The cap is **3 iterations**.
@@ -318,6 +338,8 @@ Default Claude Code values shown; Codex and other platforms override via their o
 | `FAST_TIER` | `haiku` | `gpt-5.6-luna` | `claude-haiku` | Fast reviewer (always used) |
 | `STANDARD_TIER` | `sonnet` | `gpt-5.6-terra` | `claude-sonnet` | Standard reviewer (skipped with `--fast`) |
 | `REASONING_TIER` | `opus` | `gpt-5.6-sol` | `claude-opus` | Juror (not overridable: adjudication on a weak model defeats its purpose) |
+
+A tier value prefixed `cli:` (e.g. `"standard": "cli:codex"`) dispatches that tier through the named external CLI per Step 5's cross-vendor rule. Prefer it where a second vendor's CLI is available.
 
 ## What this skill does NOT do
 

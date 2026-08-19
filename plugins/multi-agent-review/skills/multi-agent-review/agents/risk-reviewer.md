@@ -69,6 +69,10 @@ Why this boundary exists: out-of-scope findings dilute the verdict, burn operato
 6. **Error state omissions** — any user-facing operation that has no stated error state
    or failure response (what does the UI show if the call fails? what does the backend
    return if storage is unavailable?).
+7. **Threat path** - identify the cheapest path to the exact failure the artifact
+   claims to prevent, then check whether the artifact actually blocks that path.
+   A guard that defends the expensive path while the cheap one stays open is a
+   BLOCKER dressed as a feature.
 
 ## Severity definitions
 
