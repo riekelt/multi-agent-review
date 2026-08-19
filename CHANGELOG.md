@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/riekelt/multi-agent-review/compare/v1.2.0...v1.2.1) (2026-08-19)
+
+
+### Bug Fixes
+
+* fail-open --fast verdict, model-tier resolution, stale paths ([47a6a17](https://github.com/riekelt/multi-agent-review/commit/47a6a171204e87dc0a35e277c2c8bdf35dfcc1dc))
+
 # [1.2.0](https://github.com/riekelt/multi-agent-review/compare/v1.1.0...v1.2.0) (2026-06-02)
 
 
