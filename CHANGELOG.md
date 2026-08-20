@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/riekelt/multi-agent-review/compare/v1.3.0...v1.4.0) (2026-08-20)
+
+
+### Features
+
+* measured trigger evals for the description ([afb8d0d](https://github.com/riekelt/multi-agent-review/commit/afb8d0d50961006db32ef9184dee00870b396222))
+
 # [1.3.0](https://github.com/riekelt/multi-agent-review/compare/v1.2.1...v1.3.0) (2026-08-19)
 
 
