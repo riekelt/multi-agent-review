@@ -1,0 +1,21 @@
+{
+  "measured": "2026-08-20",
+  "method": "Each query was routed by a haiku agent given the full 29-entry roster (19 skills across the technical-writer, principal-engineer, and multi-agent-review plugins, plus 10 real distractor skills) and asked which single skill it would consult first. Proxy measurement of description quality, not of live-session triggering. Routing agents must run with worktree isolation and router-not-executor framing: task-shaped query text has been executed by an agent once.",
+  "targets": {
+    "multi-agent-review": { "pass": 12, "total": 12, "note": "All seven should-trigger phrasings hit, including the Dutch one and the bare 'second opinion' form. The decisive near-misses held: tone-and-clarity doc review routes to reviewing-technical-prose, code review to code-review, essay review away from this skill at 2 of 2 runs." }
+  },
+  "queries": [
+    { "id": "ma01", "should": true, "accept": ["multi-agent-review"], "q": "review my spec before I start building it" },
+    { "id": "ma02", "should": true, "accept": ["multi-agent-review"], "q": "is this plan ready to execute? docs/superpowers/plans/2026-08-19-billing-plan.md" },
+    { "id": "ma03", "should": true, "accept": ["multi-agent-review"], "q": "can I get a second opinion on this migration plan before we run it" },
+    { "id": "ma04", "should": true, "accept": ["multi-agent-review"], "q": "check this design doc hard before I hand it to the implementation agents" },
+    { "id": "ma05", "should": true, "accept": ["multi-agent-review"], "q": "run the review panel on the new spec" },
+    { "id": "ma06", "should": true, "accept": ["multi-agent-review"], "q": "spec review please, the payment refactor one" },
+    { "id": "ma07", "should": true, "accept": ["multi-agent-review"], "q": "voordat we gaan bouwen, wil je het plan nog even streng laten nakijken" },
+    { "id": "ma08", "should": false, "q": "review this code change for bugs" },
+    { "id": "ma09", "should": false, "q": "review my essay for grammar and flow" },
+    { "id": "ma10", "should": false, "q": "review the API design doc for tone and clarity" },
+    { "id": "ma11", "should": false, "q": "look over this incident postmortem draft" },
+    { "id": "ma12", "should": false, "q": "double-check my math on these AWS cost estimates" }
+  ]
+}
