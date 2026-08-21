@@ -36,7 +36,7 @@ Add to your Codex plugins via `plugins/multi-agent-review/.codex-plugin/plugin.j
 /multi-agent-review plan    # after writing-plans, before subagent-driven-development
 ```
 
-Six agents run in parallel: a fast and a standard tier each review **completeness**, **alignment**, and **risk**. If the two tiers disagree on a finding, a single reasoning-model juror adjudicates. If they agree, no juror is invoked. A tier can be pointed at another vendor's CLI (see Model tiers), which turns cross-tier disagreement into a genuinely independent second opinion instead of a same-vendor capability gap.
+Six agents run in parallel: a fast and a standard tier each review **completeness**, **alignment**, and **risk**. If the two tiers disagree on a finding, a single reasoning-model juror adjudicates. If they agree, no juror is invoked.
 
 The verdict gates the next step:
 - **Blockers** → stops execution, presents to operator (fix + re-run, or override with logged note)
@@ -102,9 +102,6 @@ plugins/multi-agent-review/
 ## Model tiers
 
 Configured per platform in that platform's `plugin.json` under `models`. Claude Code: `haiku` / `sonnet` / `opus`. Codex: `gpt-5.6-luna` / `gpt-5.6-terra` / `gpt-5.6-sol`. Cursor: `claude-haiku` / `claude-sonnet` / `claude-opus`.
-
-A tier value prefixed `cli:` dispatches that tier through an external CLI instead of the platform's own models, e.g. `"standard": "cli:codex"` on Claude Code makes the standard tier a second vendor. Recommended where a second vendor's CLI is installed: cross-vendor disagreement is what the juror is for.
-
 ## License
 
 MIT
