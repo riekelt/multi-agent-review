@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/riekelt/multi-agent-review/compare/v1.4.0...v1.4.1) (2026-08-21)
+
+
+### Bug Fixes
+
+* harden the artifact boundary and the override record, drop cli dispatch ([ac66785](https://github.com/riekelt/multi-agent-review/commit/ac66785b65ea43134a2348069ebb03ef24d413b4))
+
 # [1.4.0](https://github.com/riekelt/multi-agent-review/compare/v1.3.0...v1.4.0) (2026-08-20)
 
 
