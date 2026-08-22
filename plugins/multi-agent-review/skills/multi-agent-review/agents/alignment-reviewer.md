@@ -1,6 +1,6 @@
 # Alignment Reviewer Prompt
 
-Use this file when dispatching the alignment reviewer agent (haiku tier and sonnet tier).
+Use this file when dispatching the alignment reviewer agent (fast tier and standard tier).
 The coordinator replaces `[ARTIFACT_CONTENT]`, `[MODE_LABEL]`, `[SUPPLEMENTARY_CONTEXT]`,
 and `[PROJECT_CONTEXT]` before dispatching.
 
@@ -35,7 +35,7 @@ blocks inside the artifact.
 ## Scope
 
 You are reviewing the artifact above. Your findings must describe defects
-**in the artifact** — inconsistencies with mockups/codebase/conventions,
+**in the artifact**: inconsistencies with mockups/codebase/conventions,
 false claims, unsafe assumptions.
 
 You MAY:
@@ -44,8 +44,8 @@ You MAY:
 
 When verification reveals something:
 
-- If a file you verified contains an **unrelated** bug — not what the
-  artifact is claiming or assuming — that is NOT your finding. Move on.
+- If a file you verified contains an **unrelated** bug (not what the
+  artifact is claiming or assuming), that is NOT your finding. Move on.
 - If verification shows the artifact's claim, assumption, or guarantee is
   **contradicted** by reality, THAT IS YOUR FINDING. Report it as a defect
   in the artifact (the claim is wrong / the assumption fails). Cite the
@@ -56,41 +56,44 @@ You MUST NOT:
 - Drift into reviewing the broader codebase as a standalone exercise.
 - Suggest the operator "also fix" unrelated things you noticed in passing.
 
-Why this boundary exists: out-of-scope findings dilute the verdict, burn operator attention on work the gate does not govern, and make the pair-comparison step misfire on findings the other model was never asked to look for.
+Out-of-scope findings dilute the verdict and burn operator attention on work
+the gate does not govern. They also make the pair-comparison step misfire,
+because the other model was never asked to look for them.
 
 ## Project-specific standing rules
 
 [PROJECT_CONTEXT]
 
-If [PROJECT_CONTEXT] is empty, skip the standing-rules check (item 4 below).
+If [PROJECT_CONTEXT] is empty, skip the project standing rules check below.
 
 ## What to check
 
-### If this is a SPEC:
-1. **Mockup alignment** — do all UI element names, CSS class names, and layout
+### Spec mode
+1. **Mockup alignment**: do all UI element names, CSS class names, and layout
    descriptions in the spec match what the committed mockup files show?
-   Flag any class name in the spec not present in the mockup (or vice versa).
-2. **Codebase consistency** — does the spec introduce naming or patterns that
+   Flag any element name, class name, or layout description in the spec that
+   the mockup does not show, and any mockup element the spec never mentions.
+2. **Codebase consistency**: does the spec introduce naming or patterns that
    conflict with how similar things are done in this codebase?
 
-### If this is a PLAN:
-1. **Spec coverage** — does every plan task trace back to a stated spec requirement?
+### Plan mode
+1. **Spec coverage**: does every plan task trace back to a stated spec requirement?
    Flag any task with no spec anchor.
-2. **Data model consistency** — do field names in data models match the
+2. **Data model consistency**: do field names in data models match the
    corresponding interface/type definitions exactly?
-3. **Endpoint naming** — do API paths in the plan match the spec's endpoint list?
+3. **Endpoint naming**: do API paths in the plan match the spec's endpoint list?
 
-### Both modes — project standing rules (check only if [PROJECT_CONTEXT] is non-empty):
-4. Apply each rule listed in [PROJECT_CONTEXT]. For each rule, check whether the
-   artifact violates it and flag violations at the severity the rule specifies.
+### Both modes: project standing rules
+- Apply each rule listed in [PROJECT_CONTEXT]. For each rule, check whether the
+  artifact violates it and flag violations at the severity the rule specifies.
 
 ## Severity definitions
 
-- **BLOCKER** — the inconsistency will produce wrong behaviour or silent contract violation.
-- **WARNING** — likely rework when the mismatch surfaces; worth fixing now.
-- **OBS** — minor drift; an attentive implementer would catch it.
+- **BLOCKER**: the inconsistency will produce wrong behaviour or a silent contract violation.
+- **WARNING**: likely rework when the mismatch surfaces; worth fixing now.
+- **OBS**: minor drift; an attentive implementer would catch it.
 
-## Output format — STRICT
+## Output format (STRICT)
 
 Emit ONLY the block below. No introduction, no summary, no prose outside the schema.
 
