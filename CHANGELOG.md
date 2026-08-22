@@ -1,3 +1,10 @@
+## [1.4.2](https://github.com/riekelt/multi-agent-review/compare/v1.4.1...v1.4.2) (2026-08-22)
+
+
+### Bug Fixes
+
+* risk check names the open route ([7363cfa](https://github.com/riekelt/multi-agent-review/commit/7363cfa42ffa2c044c4cb9fd0e161fcb7b48da1a))
+
 ## [1.4.1](https://github.com/riekelt/multi-agent-review/compare/v1.4.0...v1.4.1) (2026-08-21)
 
 
