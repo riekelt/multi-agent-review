@@ -1,3 +1,10 @@
+## [1.4.3](https://github.com/riekelt/multi-agent-review/compare/v1.4.2...v1.4.3) (2026-08-22)
+
+
+### Bug Fixes
+
+* the review gate survives its own review ([e6c9934](https://github.com/riekelt/multi-agent-review/commit/e6c99348be39c3495b94b42d5984b608828c089d))
+
 ## [1.4.2](https://github.com/riekelt/multi-agent-review/compare/v1.4.1...v1.4.2) (2026-08-22)
 
 
